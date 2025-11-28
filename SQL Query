@@ -1,0 +1,113 @@
+
+Project: Consumer Goods Ad-hoc SQL Challenge
+Tools used: MySQL
+Description: SQL queries to analyze sales, revenue, profit, products, customers, channels, and regions.
+
+
+1.Total revenue, total cost, and total profit 
+SELECT SUM(revenue) AS total_revenue,
+       SUM(total_cost) AS total_cost,
+       SUM(profit) AS total_profit
+FROM sales;
+
+2.Revenue, cost, and profit by year
+SELECT YEAR(order_date) AS year,
+       SUM(revenue) AS total_revenue,
+       SUM(total_cost) AS total_cost,
+       SUM(profit) AS total_profit
+FROM sales
+GROUP BY YEAR(order_date)
+ORDER BY year;
+
+3.Revenue, cost, and profit by month 
+SELECT order_month_name AS month,
+       SUM(revenue) AS total_revenue,
+       SUM(total_cost) AS total_cost,
+       SUM(profit) AS total_profit
+FROM sales
+GROUP BY order_month_name
+ORDER BY FIELD(order_month_name,'January','February','March','April','May','June','July','August','September','October','November','December');
+
+4.Top 10 products by revenue 
+SELECT product_name, SUM(revenue) AS total_revenue
+FROM sales
+GROUP BY product_name
+ORDER BY total_revenue DESC
+LIMIT 10;
+
+5.Top 10 products by profit 
+SELECT product_name, SUM(profit) AS total_profit
+FROM sales
+GROUP BY product_name
+ORDER BY total_profit DESC
+LIMIT 10;
+
+Revenue by sales channel 
+SELECT channel, SUM(revenue) AS total_revenue, SUM(profit) AS total_profit
+FROM sales
+GROUP BY channel;
+
+6.Revenue by US region 
+SELECT us_region, SUM(revenue) AS total_revenue, SUM(profit) AS total_profit
+FROM sales
+GROUP BY us_region;
+
+7.Top 10 customers by revenue
+SELECT customer_name, SUM(revenue) AS total_revenue
+FROM sales
+GROUP BY customer_name
+ORDER BY total_revenue DESC
+LIMIT 10;
+
+8.Average profit margin per product 
+SELECT product_name, ROUND(SUM(profit)/SUM(revenue)*100,2) AS profit_margin_pct
+FROM sales
+GROUP BY product_name
+ORDER BY profit_margin_pct DESC;
+
+9.Revenue trend per month-year 
+SELECT order_month AS month_year, SUM(revenue) AS monthly_revenue
+FROM sales
+GROUP BY order_month
+ORDER BY order_month;
+
+10.Cumulative revenue over time 
+SELECT order_month,
+       SUM(revenue) AS monthly_revenue,
+       SUM(SUM(revenue)) OVER (ORDER BY order_month) AS cumulative_revenue
+FROM sales
+GROUP BY order_month
+ORDER BY order_month;
+
+11.Rank products by revenue each month 
+SELECT order_month, product_name, SUM(revenue) AS total_revenue,
+       RANK() OVER(PARTITION BY order_month ORDER BY SUM(revenue) DESC) AS revenue_rank
+FROM sales
+GROUP BY order_month, product_name
+ORDER BY order_month, revenue_rank;
+
+12.Profit margin categories
+SELECT product_name,
+       CASE
+           WHEN (profit/revenue)*100 >= 50 THEN 'High Margin'
+           WHEN (profit/revenue)*100 >= 20 THEN 'Medium Margin'
+           ELSE 'Low Margin'
+       END AS margin_category,
+       SUM(revenue) AS total_revenue,
+       SUM(profit) AS total_profit
+FROM sales
+GROUP BY product_name, margin_category
+ORDER BY total_profit DESC;
+
+13.Top 5 states by revenue 
+SELECT state_name, SUM(revenue) AS total_revenue
+FROM sales
+GROUP BY state_name
+ORDER BY total_revenue DESC
+LIMIT 5;
+
+14.Top products per channel 
+SELECT channel, product_name, SUM(revenue) AS total_revenue
+FROM sales
+GROUP BY channel, product_name
+ORDER BY channel, total_revenue DESC;
